@@ -1,0 +1,15 @@
+generic:
+  recipe: remove
+  remove-methods:
+    - develocity
+    - buildScan
+    - buildCache
+    - exclusiveContent
+    - gradlePlugin
+    - apiBuild
+  remove-plugins:
+    - com.gradle.develocity
+    - org.gradle.toolchains.foojay-resolver-convention
+    - org.jetbrains.kotlinx.binary-compatibility-validator
+    - libs.plugins.kotlinx.binaryCompatibilityValidator
+    - libs.plugins.gradle.pluginPublish
