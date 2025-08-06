@@ -1,6 +1,5 @@
 package org.debian.gradle.rewrite;
 
-import org.gradle.workers.internal.AbstractClassLoaderWorker;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
@@ -27,11 +26,25 @@ public class RemoveExtensionRecipe extends Recipe {
     private final boolean kotlinDsl;
     private final HashSet<String> removeMethods;
     private final HashSet<String> removePlugins;
+    private final HashSet<String> removeClasspath;
+    private final HashSet<String> methodWithArg;
+    private final HashSet<String> removeImports;
+    private final HashSet<String> methodWithTypeParameter;
 
-    public RemoveExtensionRecipe(boolean kotlinDsl, List<String> removePlugins, List<String> removeMethods) {
+    public RemoveExtensionRecipe(boolean kotlinDsl,
+                                 List<String> removePlugins,
+                                 List<String> removeMethods,
+                                 List<String> removeClasspath,
+                                 List<String> methodWithArg,
+                                 List<String> removeImports,
+                                 List<String> methodWithTypeParameter) {
         this.kotlinDsl = kotlinDsl;
         this.removePlugins = new HashSet<>(removePlugins);
         this.removeMethods = new HashSet<>(removeMethods);
+        this.removeClasspath = new HashSet<>(removeClasspath);
+        this.methodWithArg = new HashSet<>(methodWithArg);
+        this.removeImports = new HashSet<>(removeImports);
+        this.methodWithTypeParameter = new HashSet<>(methodWithTypeParameter);
     }
 
     @Override
@@ -59,6 +72,15 @@ public class RemoveExtensionRecipe extends Recipe {
         TreeVisitor<?, ExecutionContext> ret;
         if (kotlinDsl) {
             return new KotlinIsoVisitor<ExecutionContext>() {
+
+                @Override
+                public J.Import visitImport(J.Import _import, ExecutionContext executionContext) {
+                    J.Import newImport = filterImport(_import, executionContext);
+                    if (newImport == null) {
+                        return null;
+                    }
+                    return super.visitImport(newImport, executionContext);
+                }
 
                 @Override
                 public J.Lambda visitLambda(J.Lambda lambda, ExecutionContext executionContext) {
@@ -115,6 +137,13 @@ public class RemoveExtensionRecipe extends Recipe {
         };
     }
 
+    private J.Import filterImport(J.Import anImport, ExecutionContext executionContext) {
+        if (removeImports.contains(anImport.getQualid().toString())) {
+            return null;
+        }
+        return anImport;
+    }
+
     private J.Lambda filterLambda(J.Lambda lambda, ExecutionContext executionContext) {
         if (executionContext.getMessage(PLUGIN_BLOCK, false)) {
             J.Block block = (J.Block) lambda.getBody();
@@ -142,10 +171,28 @@ public class RemoveExtensionRecipe extends Recipe {
             return null;
         }
 
+        var tps = method.getTypeParameters();
+        if (tps != null) {
+            for (var tp : method.getTypeParameters()) {
+                if (methodWithTypeParameter.contains(tp.toString())) {
+                    return null;
+                }
+            }
+        }
+
         if ("plugins".equals(method.getSimpleName())) {
             ctx.putMessage(PLUGIN_BLOCK, true);
         }
-
+        if (methodWithArg.contains(method.toString())) {
+            return null;
+        }
+        if ("implementation".equals(method.getSimpleName())
+                || "classpath".equals(method.getSimpleName())) {
+            String id = method.getArguments().get(0).print();
+            if (removeClasspath.contains(id)) {
+                return null;
+            }
+        }
         if ("id".equals(method.getSimpleName()) || "alias".equals(method.getSimpleName())) {
             String id = method.getArguments().get(0).toString();
             if (removePlugins.contains(id)) {

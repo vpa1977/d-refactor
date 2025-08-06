@@ -71,8 +71,19 @@ public class Main {
                     recipeImpl,
                     sources.stream().filter( x -> fileSet.isEmpty() || fileSet.contains(x.getSourcePath().toString())).toList(),
                     context);
+            removeUnwantedFiles(baseDir, (List<String>)recipeData.get("remove-files"));
         }
         System.out.println("Processed " + sources.size());
+    }
+
+    private static void removeUnwantedFiles(Path baseDir, List<String> files) {
+        for (String s : files) {
+            try {
+                Files.deleteIfExists(baseDir.resolve(s));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static Recipe createRecipe(boolean kotlinDsl, Map<String, Object> recipeData) {
@@ -87,7 +98,31 @@ public class Main {
                 if (removePlugins == null) {
                     removePlugins = List.of();
                 }
-                return new RemoveExtensionRecipe(kotlinDsl, removePlugins, removeMethods);
+                var removeClasspath = (List<String>)recipeData.get("remove-classpath");
+                if (removeClasspath == null) {
+                    removeClasspath = List.of();
+                }
+                var methodWithArg = (List<String>)recipeData.get("method-with-arg");
+                if (methodWithArg == null) {
+                    methodWithArg = List.of();
+                }
+                var removeImport = (List<String>)recipeData.get("remove-import");
+                if (removeImport == null) {
+                    removeImport = List.of();
+                }
+
+                var methodWithTypeParameter = (List<String>)recipeData.get("method-with-type-parameter");
+                if (methodWithTypeParameter == null) {
+                    methodWithTypeParameter = List.of();
+                }
+
+                return new RemoveExtensionRecipe(kotlinDsl,
+                        removePlugins,
+                        removeMethods,
+                        removeClasspath,
+                        methodWithArg,
+                        removeImport,
+                        methodWithTypeParameter);
             }
         }
         throw new IllegalArgumentException("Unknown recipe "+ recipe);
@@ -132,7 +167,7 @@ public class Main {
             });
         }
         //files.clear();
-        //files.add(Path.of(baseDir + "/build.gradle.kts"));
+       // files.add(Path.of(baseDir + "/kotlinx-coroutines-core/build.gradle.kts"));
         return p.parse(files, baseDir, context).toList();
     }
 
