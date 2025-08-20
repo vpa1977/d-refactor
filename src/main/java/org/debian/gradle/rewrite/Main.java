@@ -72,11 +72,27 @@ public class Main {
                     sources.stream().filter( x -> fileSet.isEmpty() || fileSet.contains(x.getSourcePath().toString())).toList(),
                     context);
             removeUnwantedFiles(baseDir, (List<String>)recipeData.get("remove-files"));
+            replaceInFiles(
+                    (List<String>)recipeData.get("raw-remove-strings"),
+                    sources.stream().filter( x -> fileSet.isEmpty() || fileSet.contains(x.getSourcePath().toString())).toList());
         }
         System.out.println("Processed " + sources.size());
     }
 
+    private static void replaceInFiles(List<String> strings, List<SourceFile> list) throws IOException {
+        for (var sourceFile : list) {
+            String fileData = Files.readString(sourceFile.getSourcePath());
+            for (var s : strings) {
+                fileData = fileData.replace(s, "");
+            }
+            Files.writeString(sourceFile.getSourcePath(), fileData);
+        }
+    }
+
     private static void removeUnwantedFiles(Path baseDir, List<String> files) {
+        if (files == null) {
+            return;
+        }
         for (String s : files) {
             try {
                 Files.deleteIfExists(baseDir.resolve(s));
@@ -116,13 +132,19 @@ public class Main {
                     methodWithTypeParameter = List.of();
                 }
 
+                var assignment = (List<String>)recipeData.get("assignment");
+                if (assignment == null) {
+                    assignment = List.of();
+                }
+
                 return new RemoveExtensionRecipe(kotlinDsl,
                         removePlugins,
                         removeMethods,
                         removeClasspath,
                         methodWithArg,
                         removeImport,
-                        methodWithTypeParameter);
+                        methodWithTypeParameter,
+                        assignment);
             }
         }
         throw new IllegalArgumentException("Unknown recipe "+ recipe);
@@ -166,8 +188,8 @@ public class Main {
                 }
             });
         }
-        //files.clear();
-       // files.add(Path.of(baseDir + "/kotlinx-coroutines-core/build.gradle.kts"));
+        files.clear();
+        files.add(Path.of(baseDir + "/settings.gradle"));
         return p.parse(files, baseDir, context).toList();
     }
 

@@ -12,8 +12,6 @@ import org.openrewrite.java.tree.JRightPadded;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.kotlin.KotlinIsoVisitor;
 import org.openrewrite.kotlin.tree.K;
-
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -30,6 +28,7 @@ public class RemoveExtensionRecipe extends Recipe {
     private final HashSet<String> methodWithArg;
     private final HashSet<String> removeImports;
     private final HashSet<String> methodWithTypeParameter;
+    private final HashSet<String> assignment;
 
     public RemoveExtensionRecipe(boolean kotlinDsl,
                                  List<String> removePlugins,
@@ -37,7 +36,8 @@ public class RemoveExtensionRecipe extends Recipe {
                                  List<String> removeClasspath,
                                  List<String> methodWithArg,
                                  List<String> removeImports,
-                                 List<String> methodWithTypeParameter) {
+                                 List<String> methodWithTypeParameter,
+                                 List<String> assignment) {
         this.kotlinDsl = kotlinDsl;
         this.removePlugins = new HashSet<>(removePlugins);
         this.removeMethods = new HashSet<>(removeMethods);
@@ -45,6 +45,7 @@ public class RemoveExtensionRecipe extends Recipe {
         this.methodWithArg = new HashSet<>(methodWithArg);
         this.removeImports = new HashSet<>(removeImports);
         this.methodWithTypeParameter = new HashSet<>(methodWithTypeParameter);
+        this.assignment = new HashSet<>(assignment);
     }
 
     @Override
@@ -72,6 +73,14 @@ public class RemoveExtensionRecipe extends Recipe {
         TreeVisitor<?, ExecutionContext> ret;
         if (kotlinDsl) {
             return new KotlinIsoVisitor<ExecutionContext>() {
+
+                @Override
+                public J.Assignment visitAssignment(J.Assignment assignment, ExecutionContext executionContext) {
+                    if (RemoveExtensionRecipe.this.assignment.contains(assignment.toString())) {
+                        return null;
+                    }
+                    return super.visitAssignment(assignment, executionContext);
+                }
 
                 @Override
                 public J.Import visitImport(J.Import _import, ExecutionContext executionContext) {
@@ -173,7 +182,7 @@ public class RemoveExtensionRecipe extends Recipe {
 
         var tps = method.getTypeParameters();
         if (tps != null) {
-            for (var tp : method.getTypeParameters()) {
+            for (var tp : tps) {
                 if (methodWithTypeParameter.contains(tp.toString())) {
                     return null;
                 }
@@ -183,7 +192,11 @@ public class RemoveExtensionRecipe extends Recipe {
         if ("plugins".equals(method.getSimpleName())) {
             ctx.putMessage(PLUGIN_BLOCK, true);
         }
-        if (methodWithArg.contains(method.toString())) {
+        String compressedMethod = method.toString()
+                .replace("\n", "")
+                .replace(" ", "")
+                .replace("\t", "");
+        if (methodWithArg.contains(method.toString()) || methodWithArg.contains(compressedMethod)) {
             return null;
         }
         if ("implementation".equals(method.getSimpleName())
@@ -199,7 +212,7 @@ public class RemoveExtensionRecipe extends Recipe {
                 return null;
             }
         }
-        if ("version".equals(method.getSimpleName())) {
+        if ("version".equals(method.getSimpleName()) && (method.getSelect() instanceof J.MethodInvocation)) {
             J.MethodInvocation call = (J.MethodInvocation) method.getSelect();
             if (call == null) {
                 return method;
