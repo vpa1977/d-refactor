@@ -16,16 +16,16 @@ plugins {
 
 group = "org.debian.gradle"
 version = "1.0"
-
+val rewrite = "8.61.0-SNAPSHOT"
 repositories {
-    // Use Maven Central for resolving dependencies.
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     implementation(gradleApi())
-    implementation("org.openrewrite:rewrite-gradle:8.59.1")
+    implementation("org.openrewrite:rewrite-gradle:${rewrite}")
     implementation("org.yaml:snakeyaml:2.2")
-    implementation("org.openrewrite:rewrite-gradle:8.59.1")
-    implementation("org.openrewrite:rewrite-kotlin:8.59.1")
+    implementation("org.openrewrite:rewrite-gradle:${rewrite}")
+    implementation("org.openrewrite:rewrite-kotlin:${rewrite}")
 }
