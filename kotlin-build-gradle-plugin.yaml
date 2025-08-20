@@ -1,0 +1,48 @@
+generic:
+    recipe: remove
+    assignment:
+      - kotlinOptions.jvmTarget = "1.8"
+    remove-methods:
+      - develocity
+      - buildScan
+      - buildCache
+      - exclusiveContent
+      - gradlePlugin
+      - apiBuild
+      - apiValidation
+      - knit
+      - kover
+      - animalsniffer
+      - externalDocumentationLink
+    remove-plugins:
+      - kotlinx-knit
+      - com.gradle.develocity
+      - org.gradle.toolchains.foojay-resolver-convention
+      - org.jetbrains.kotlinx.binary-compatibility-validator
+      - libs.plugins.kotlinx.binaryCompatibilityValidator
+      - libs.plugins.gradle.pluginPublish
+      - org.jetbrains.kotlinx.benchmark
+      - org.jetbrains.dokka
+      - org.jetbrains.kotlinx.kover
+      - ru.vyarus.animalsniffer
+      - me.champeau.jmh
+      - org.openjfx.javafxplugin
+      - develocity
+    remove-classpath:
+      - org.jetbrains.dokka:dokka-gradle-plugin:version("dokka")
+      - org.jetbrains.dokka:dokka-core:version("dokka")
+      - org.jetbrains.kotlinx:binary-compatibility-validator:version("binary_compatibility_validator")
+      - ru.vyarus:gradle-animalsniffer-plugin:version("animalsniffer")
+      - org.jetbrains.kotlinx:kotlinx-knit:version("knit")
+      - org.jetbrains.kotlinx:kover-gradle-plugin:version("kover")
+      - org.jetbrains.kotlinx:kotlinx-benchmark-plugin:version("benchmarks")
+      - libs.gradle.toolchainsFoojayResolver.gradlePlugin
+    method-with-arg:
+      - include(":develocity")
+
+kotlin-strip-raw:
+    files:
+      - settings.gradle
+    raw-remove-strings:
+      - id "develocity"
+      - id "jvm-toolchain-provisioning"

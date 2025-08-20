@@ -11,6 +11,7 @@ generic:
     - knit
     - kover
     - animalsniffer
+    - externalDocumentationLink
   remove-plugins:
     - kotlinx-knit
     - com.gradle.develocity
@@ -22,6 +23,8 @@ generic:
     - org.jetbrains.dokka
     - org.jetbrains.kotlinx.kover
     - ru.vyarus.animalsniffer
+    - me.champeau.jmh
+    - org.openjfx.javafxplugin
   remove-classpath:
     - org.jetbrains.dokka:dokka-gradle-plugin:version("dokka")
     - org.jetbrains.dokka:dokka-core:version("dokka")
@@ -31,22 +34,6 @@ generic:
     - org.jetbrains.kotlinx:kover-gradle-plugin:version("kover")
     - org.jetbrains.kotlinx:kotlinx-benchmark-plugin:version("benchmarks")
   remove-files:
-    - buildSrc/src/main/kotlin/animalsniffer-jvm-conventions.gradle.kts
-    - buildSrc/src/main/kotlin/animalsniffer-multiplatform-conventions.gradle.kts
-    - buildSrc/src/main/kotlin/AuxBuildConfiguration.kt
-    - buildSrc/src/main/kotlin/CacheRedirector.kt
-    - buildSrc/src/main/kotlin/dokka-conventions.gradle.kts
-    - buildSrc/src/main/kotlin/Dokka.kt
-    - buildSrc/src/main/kotlin/knit-conventions.gradle.kts
-    - buildSrc/src/main/kotlin/kover-conventions.gradle.kts
   method-with-arg:
-    - with(CacheRedirector, ->{ buildscript.configureBuildScript(rootProject); })
-    - AuxBuildConfiguration.configure(rootProject)
-    - apply(plugin = "kover-conventions")
-    - apply(plugin = "animalsniffer-jvm-conventions")
-    - apply(plugin = "animalsniffer-multiplatform-conventions")
-    - benchmark.targets.register("${name}Benchmark")
   remove-import:
-    - ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
   method-with-type-parameter:
-    - AnimalSniffer
