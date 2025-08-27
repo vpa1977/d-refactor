@@ -72,20 +72,23 @@ public class Main {
                     sources.stream().filter( x -> fileSet.isEmpty() || fileSet.contains(x.getSourcePath().toString())).toList(),
                     context);
             removeUnwantedFiles(baseDir, (List<String>)recipeData.get("remove-files"));
-            replaceInFiles(
+            replaceInFiles(baseDir,
                     (List<String>)recipeData.get("raw-remove-strings"),
                     sources.stream().filter( x -> fileSet.isEmpty() || fileSet.contains(x.getSourcePath().toString())).toList());
         }
         System.out.println("Processed " + sources.size());
     }
 
-    private static void replaceInFiles(List<String> strings, List<SourceFile> list) throws IOException {
+    private static void replaceInFiles(Path baseDir, List<String> strings, List<SourceFile> list) throws IOException {
+        if (strings == null) {
+            return;
+        }
         for (var sourceFile : list) {
-            String fileData = Files.readString(sourceFile.getSourcePath());
+            String fileData = Files.readString(baseDir.resolve(sourceFile.getSourcePath()));
             for (var s : strings) {
                 fileData = fileData.replace(s, "");
             }
-            Files.writeString(sourceFile.getSourcePath(), fileData);
+            Files.writeString(baseDir.resolve(sourceFile.getSourcePath()), fileData);
         }
     }
 
@@ -137,6 +140,11 @@ public class Main {
                     assignment = List.of();
                 }
 
+                var selects = (List<String>)recipeData.get("remove-select");
+                if (selects == null) {
+                    selects = List.of();
+                }
+
                 return new RemoveExtensionRecipe(kotlinDsl,
                         removePlugins,
                         removeMethods,
@@ -144,7 +152,8 @@ public class Main {
                         methodWithArg,
                         removeImport,
                         methodWithTypeParameter,
-                        assignment);
+                        assignment,
+                        selects);
             }
         }
         throw new IllegalArgumentException("Unknown recipe "+ recipe);
@@ -188,8 +197,8 @@ public class Main {
                 }
             });
         }
-        files.clear();
-        files.add(Path.of(baseDir + "/settings.gradle"));
+        //files.clear();
+        //files.add(Path.of(baseDir + "/build.gradle.kts"));
         return p.parse(files, baseDir, context).toList();
     }
 

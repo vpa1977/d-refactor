@@ -1,13 +1,15 @@
+# @file:Suppress("UNUSED_PARAMETER", "UNUSED_VARIABLE")
+# repo/scripts/kotlin-bootstrap.settings.gradle.kts
 generic:
     recipe: remove
     assignment:
       - kotlinOptions.jvmTarget = "1.8"
+      - allWarningsAsErrors = true
     remove-methods:
       - develocity
       - buildScan
       - buildCache
       - exclusiveContent
-      - gradlePlugin
       - apiBuild
       - apiValidation
       - knit
@@ -28,6 +30,7 @@ generic:
       - me.champeau.jmh
       - org.openjfx.javafxplugin
       - develocity
+      - jvm-toolchain-provisioning
     remove-classpath:
       - org.jetbrains.dokka:dokka-gradle-plugin:version("dokka")
       - org.jetbrains.dokka:dokka-core:version("dokka")
@@ -39,10 +42,19 @@ generic:
       - libs.gradle.toolchainsFoojayResolver.gradlePlugin
     method-with-arg:
       - include(":develocity")
+      - resolutionStrategy.eachDependency(->{if(requested.group=="com.google.code.gson"&&requested.name=="gson"){useVersion(gsonVersion);because("Forceusingsamegsonversionbecauseofhttps://github.com/google/gson/pull/1991");}})
+    remove-files:
+      - repo/gradle-settings-conventions/jvm-toolchain-provisioning/src/main/kotlin/jvm-toolchain-provisioning.settings.gradle.kts
+      - repo/gradle-settings-conventions/jvm-toolchain-provisioning/build.gradle.kts
 
 kotlin-strip-raw:
+    recipe: remove
     files:
       - settings.gradle
+      - repo/gradle-build-conventions/settings.gradle.kts
+      - repo/gradle-build-conventions/buildsrc-compat/build.gradle.kts
     raw-remove-strings:
       - id "develocity"
       - id "jvm-toolchain-provisioning"
+      - id("jvm-toolchain-provisioning")
+      - val gsonVersion = libs.versions.gson.get()

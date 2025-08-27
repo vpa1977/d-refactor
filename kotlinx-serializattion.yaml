@@ -1,0 +1,68 @@
+generic:
+  recipe: remove
+  assignment:
+    - kotlinOptions.jvmTarget = "1.8"
+    - allWarningsAsErrors = true
+  remove-methods:
+    - develocity
+    - buildScan
+    - buildCache
+    - exclusiveContent
+    - gradlePlugin
+    - apiBuild
+    - apiValidation
+    - knit
+    - kover
+    - animalsniffer
+    - externalDocumentationLink
+    - dokka
+  remove-plugins:
+    - kotlinx-knit
+    - com.gradle.develocity
+    - org.gradle.toolchains.foojay-resolver-convention
+    - org.jetbrains.kotlinx.binary-compatibility-validator
+    - libs.plugins.kotlinx.binaryCompatibilityValidator
+    - libs.plugins.gradle.pluginPublish
+    - org.jetbrains.kotlinx.benchmark
+    - org.jetbrains.dokka
+    - org.jetbrains.kotlinx.kover
+    - ru.vyarus.animalsniffer
+    - me.champeau.jmh
+    - org.openjfx.javafxplugin
+    - dokka-conventions
+    - org.jetbrains.kotlinx.knit
+    - kover-conventions
+    - native-targets-conventions
+  remove-classpath:
+    - org.jetbrains.dokka:dokka-gradle-plugin:version("dokka")
+    - org.jetbrains.dokka:dokka-core:version("dokka")
+    - org.jetbrains.kotlinx:binary-compatibility-validator:version("binary_compatibility_validator")
+    - ru.vyarus:gradle-animalsniffer-plugin:version("animalsniffer")
+    - org.jetbrains.kotlinx:kotlinx-knit:version("knit")
+    - org.jetbrains.kotlinx:kover-gradle-plugin:version("kover")
+    - org.jetbrains.kotlinx:kotlinx-benchmark-plugin:version("benchmarks")
+    - libs.gradlePlugin.kover
+    - libs.gradlePlugin.dokka
+    - libs.gradlePlugin.animalsniffer
+    - libs.gradlePlugin.binaryCompatibilityValidator
+  remove-files:
+    - buildSrc/src/main/kotlin/dokka-conventions.gradle.kts
+    - buildSrc/src/main/kotlin/animalsniffer-conventions.gradle.kts
+    - benchmark/build.gradle.kts
+    - guide/build.gradle.kts
+    - integration-test/build.gradle.kts
+    - buildSrc/src/main/kotlin/native-targets-conventions.gradle.kts
+  method-with-arg:
+    - apply(plugin="dokka-conventions")
+    - apply(plugin="animalsniffer-conventions")
+    - tasks.named("koverHtmlReport",->{enabled=false;})
+    - tasks.named("koverXmlReport",->{enabled=false;})
+    - tasks.named("koverVerify",->{enabled=false;})
+    - tasks.named("knitPrepare",->{dependsOn("dokkaGenerate");})
+    - alias(libs.plugins.knit)
+  remove-import:
+    - kotlinx.validation.*
+    - org.jetbrains.dokka.gradle.*
+  method-with-type-parameter:
+  remove-select:
+    - dokka.dokkaSourceSets

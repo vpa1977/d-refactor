@@ -29,6 +29,7 @@ public class RemoveExtensionRecipe extends Recipe {
     private final HashSet<String> removeImports;
     private final HashSet<String> methodWithTypeParameter;
     private final HashSet<String> assignment;
+    private final HashSet<String> selects;
 
     public RemoveExtensionRecipe(boolean kotlinDsl,
                                  List<String> removePlugins,
@@ -37,7 +38,8 @@ public class RemoveExtensionRecipe extends Recipe {
                                  List<String> methodWithArg,
                                  List<String> removeImports,
                                  List<String> methodWithTypeParameter,
-                                 List<String> assignment) {
+                                 List<String> assignment,
+                                 List<String> selects) {
         this.kotlinDsl = kotlinDsl;
         this.removePlugins = new HashSet<>(removePlugins);
         this.removeMethods = new HashSet<>(removeMethods);
@@ -46,6 +48,7 @@ public class RemoveExtensionRecipe extends Recipe {
         this.removeImports = new HashSet<>(removeImports);
         this.methodWithTypeParameter = new HashSet<>(methodWithTypeParameter);
         this.assignment = new HashSet<>(assignment);
+        this.selects = new HashSet<>(selects);
     }
 
     @Override
@@ -221,6 +224,10 @@ public class RemoveExtensionRecipe extends Recipe {
             if (removePlugins.contains(id)) {
                 return null;
             }
+        }
+
+        if (method.getSelect() != null && selects.contains(method.getSelect().toString())) {
+            return null;
         }
         return method;
     }
